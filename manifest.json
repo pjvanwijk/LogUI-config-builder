@@ -1,0 +1,22 @@
+{
+  "author": "Paul van Wijk",
+  "name": "LogUI Config Builder",
+  "description": "Configuration object builder for the LogUI framework.",
+  "version": "0.1",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "LogUI Config Builder"
+  },
+  "background": {
+    "service_worker": "background_bundle.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content_bundle.js"]
+    }
+  ],
+  "permissions": ["storage", "contextMenus"]
+  
+}

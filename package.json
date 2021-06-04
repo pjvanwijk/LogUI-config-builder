@@ -1,0 +1,39 @@
+{
+  "name": "logui-config-builder",
+  "version": "1.0.0",
+  "description": "Configuration object builder for the LogUI framework",
+  "main": "popup.js",
+  "private": true,
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "logui",
+    "chrome",
+    "extension",
+    "configuration"
+  ],
+  "author": "Paul van Wijk",
+  "license": "ISC",
+  "devDependencies": {
+    "@popperjs/core": "^2.9.2",
+    "bootstrap": "^5.0.1",
+    "css-loader": "^5.2.6",
+    "file-loader": "^6.2.0",
+    "html-loader": "^2.1.2",
+    "html-webpack-plugin": "^5.3.1",
+    "style-loader": "^2.0.0",
+    "svg-inline-loader": "^0.8.2",
+    "svg-url-loader": "^7.1.1",
+    "vue": "^2.6.13",
+    "vue-loader": "^15.9.7",
+    "vue-template-compiler": "^2.6.13",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.0"
+  },
+  "dependencies": {}
+}
