@@ -8,6 +8,22 @@ import TrackingConfiguration from "../model/tracking-configuration/tracking-conf
  */
 
 console.log('Content script loaded!');
+
+document.body.querySelectorAll('*').forEach(element => {
+  var originalColor;
+  element.addEventListener('mouseenter', (event) => {
+    // console.log(event);
+    event.preventDefault();
+    originalColor = element.style.backgroundColor;
+    element.style.backgroundColor = "green";
+  });
+  element.addEventListener('mouseleave', (event) => {
+    // console.log(event);
+    event.preventDefault();
+    element.style.backgroundColor = originalColor;
+  }); 
+});
+
 let trackingConfig = new TrackingConfiguration();
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -23,6 +39,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 function decorateBody() {
   document.body.addEventListener('click', (event) => {
       const output = getSelector(event.target);
+      event.preventDefault();
       alert(output);
       trackingConfig.trackingConfigurationValues.push(output);
       console.log(trackingConfig);
