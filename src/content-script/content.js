@@ -1,4 +1,5 @@
 import TrackingConfiguration from "../model/tracking-configuration/tracking-configuration";
+import Picker from "./picker";
 
 /**
  * This is a content script (https://developer.chrome.com/docs/extensions/mv3/content_scripts/) 
@@ -9,23 +10,11 @@ import TrackingConfiguration from "../model/tracking-configuration/tracking-conf
 
 console.log('Content script loaded!');
 
-document.body.querySelectorAll('*').forEach(element => {
-  var originalColor;
-  element.addEventListener('mouseenter', (event) => {
-    // console.log(event);
-    event.preventDefault();
-    originalColor = element.style.backgroundColor;
-    element.style.backgroundColor = "green";
-  });
-  element.addEventListener('mouseleave', (event) => {
-    // console.log(event);
-    event.preventDefault();
-    element.style.backgroundColor = originalColor;
-  }); 
-});
+new Picker();
 
 let trackingConfig = new TrackingConfiguration();
 
+// Activate element picker
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.command && message.command === 'activatePicker') {
     console.log(`Received command ${message.command}`);
