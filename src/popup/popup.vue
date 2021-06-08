@@ -72,13 +72,13 @@ import TrackingConfiguration from '../model/tracking-configuration/tracking-conf
 
 export default {
     name: 'popupApp',
-    data: function () {
+    data() {
       return {
         browserEvents: new BrowserEvents(),
         logUIConfig: new LogUIConfiguration(),
         trackingConfig: new TrackingConfiguration(),
         port: null
-      }
+      };
     },
     methods: {
         activatePicker: function(event) {
