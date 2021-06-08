@@ -1,5 +1,5 @@
 /**
- * Simple element picker.
+ * Simple element picker that highlights DOM elements when hovered.
  */
 export default class Picker {
     constructor () {
@@ -16,6 +16,7 @@ export default class Picker {
 
         document.body.appendChild(this.highlight);
 
+        // Highlight the current element's bounding box on mouse over
         document.addEventListener('mousemove', (event) => {
             /* 
             * Highlight the element by finding its bounding box and filling it with a semi-transparent div
@@ -29,6 +30,23 @@ export default class Picker {
             this.highlight.style.top = `${box.top + window.scrollY}px`;
             this.highlight.style.left = `${box.left + window.scrollX}px`;
         });
+
+        // Change the current selected element on a click 
+        document.body.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (this.onPickCallback) {
+                this.onPickCallback(event.target);
+            }
+        });
+    }
+
+    /**
+     * Set the pick callback that will be invoked when an element is picked. 
+     * Must be a function that takes 1 argument.
+     * The callback will be called with the event target element
+     */
+    set onPickListener(fn) {
+        this.onPickCallback = fn;
     }
 }
  
