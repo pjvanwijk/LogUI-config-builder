@@ -1,5 +1,5 @@
 <template>
-    <div class="container fixed-top bg-light" id="logui-picker-ui">
+    <div class="container fixed-top bg-light" id="logui-selector-editor-ui">
         <div class="row">
             <h1>Selector Options</h1>
             <h2>Specificity: {{specificity}}</h2>
