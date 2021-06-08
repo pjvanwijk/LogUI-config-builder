@@ -6,9 +6,13 @@ export default class Picker {
         console.log('New element picker created');
         this.highlight = document.createElement('div');
         this.highlight.style.position = 'absolute';
+
+        // The highlight itself can not be selected
+        this.highlight.style.pointerEvents = 'none';
+        
         this.highlight.style.background = '#46509E';
         this.highlight.style.opacity = '0.5'
-        this.highlight.id = 'logui_highlight';
+        this.highlight.id = 'logui-highlight';
 
         document.body.appendChild(this.highlight);
 
