@@ -1,5 +1,7 @@
 import TrackingConfiguration from "../model/tracking-configuration/tracking-configuration";
 import Picker from "./picker";
+import Vue from 'vue';
+import SelectorEditor from './selector-editor.vue';
 
 /**
  * This is a content script (https://developer.chrome.com/docs/extensions/mv3/content_scripts/) 
@@ -8,36 +10,54 @@ import Picker from "./picker";
  * A Content script can listen for incoming messages from the popup.
  */
 
-console.log('Content script loaded!');
-
-new Picker();
+console.log('LogUI extension content script loaded!');
 
 let trackingConfig = new TrackingConfiguration();
+let selectorEditorVue = null;
+let picker = null;
 
-// Activate element picker
+// Mountpoint for the selector editor UI
+const selectorEditMountId = 'logui-selector-edit-wrapper'
+
+// Element picker callback to get into selector edit mode when an element gets selected
+const onPickListener = (element) => {
+  // Pause the picker because we are going into selector edit mode
+  picker.stop();
+  editSelector(element);
+};
+
+// Listen for the message to activate element picker
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.command && message.command === 'activatePicker') {
-    console.log(`Received command ${message.command}`);
+    console.log(`Received ${message.command} command`);
     trackingConfig = message.trackingConfig;
     console.log(trackingConfig);
-    decorateBody();
+
+    // Add event listener to the whole DOM 
+    picker = new Picker();
+    picker.onPickListener = onPickListener;
+
+    // Initialize the selector editor
+    selectorEditorVue = new Vue({ render: h => h(SelectorEditor) });
+    // Add the selector editor UI placeholder
+    const selectorEditMount = document.createElement('div');
+    selectorEditMount.id = selectorEditMountId;
+    document.body.appendChild(selectorEditMount);
+
+    picker.start();
   }
 });
 
-// GUI generation: add event listener to the whole DOM
-function decorateBody() {
-  document.body.addEventListener('click', (event) => {
-      const output = getSelector(event.target);
-      event.preventDefault();
-      alert(output);
-      trackingConfig.trackingConfigurationValues.push(output);
-      console.log(trackingConfig);
-  });
+// Go into selector edit mode
+function editSelector(selectedElement) {
+  console.log(`mounting vue component on ${selectorEditMountId}`);
+  selectorEditorVue.$mount(`#${selectorEditMountId}`);
+  console.log(`Edit mode for ${getSelector(selectedElement)}`);
+  // trackingConfig.trackingConfigurationValues.push(output);
+  // console.log(trackingConfig);
 }
 
 function getSelector(context) {
-  console.log(context);
-
   let index, pathSelector, localName;
   
   if (context == "null") throw "not an DOM reference";

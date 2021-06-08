@@ -3,7 +3,7 @@
  */
 export default class Picker {
     constructor () {
-        console.log('New element picker created');
+        this.initListeners();
         this.highlight = document.createElement('div');
         this.highlight.style.position = 'absolute';
 
@@ -15,9 +15,20 @@ export default class Picker {
         this.highlight.id = 'logui-highlight';
 
         document.body.appendChild(this.highlight);
+        console.log('New element picker created');
+    }
 
-        // Highlight the current element's bounding box on mouse over
-        document.addEventListener('mousemove', (event) => {
+    /**
+     * Set the pick callback that will be invoked when an element is picked. 
+     * Must be a function that takes 1 argument.
+     * The callback will be called with the event target element
+     */
+    set onPickListener(fn) {
+        this.onPickCallback = fn;
+    }
+
+    initListeners() {
+        this.mouseMoveListener = (event) => {
             /* 
             * Highlight the element by finding its bounding box and filling it with a semi-transparent div
             * The DOMRect from getBoundingClientRect returns "the smallest rectangle which contains 
@@ -29,24 +40,29 @@ export default class Picker {
             this.highlight.style.height = `${box.height}px`;
             this.highlight.style.top = `${box.top + window.scrollY}px`;
             this.highlight.style.left = `${box.left + window.scrollX}px`;
-        });
+        };
 
-        // Change the current selected element on a click 
-        document.body.addEventListener('click', (event) => {
+        this.clickListener = (event) => {
             event.preventDefault();
             if (this.onPickCallback) {
                 this.onPickCallback(event.target);
             }
-        });
+        };
     }
 
-    /**
-     * Set the pick callback that will be invoked when an element is picked. 
-     * Must be a function that takes 1 argument.
-     * The callback will be called with the event target element
-     */
-    set onPickListener(fn) {
-        this.onPickCallback = fn;
+    start() {
+        console.log('Adding picker event listeners to document body');
+        // Highlight the current element's bounding box on mouse over
+        document.body.addEventListener('mousemove', this.mouseMoveListener);
+
+        // Change the current selected element on a click 
+        document.body.addEventListener('click', this.clickListener);
+    }
+
+    stop() {
+        console.log('Selection made. Removing picker event listeners');
+        document.body.removeEventListener('mousemove', this.mouseMoveListener);
+        document.body.removeEventListener('click', this.clickListener);
     }
 }
  
