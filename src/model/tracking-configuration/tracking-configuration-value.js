@@ -7,4 +7,11 @@ export default class TrackingConfigurationValue {
         this.selector = selector;
         this.eventName = eventName;
     }
+    get getValue() {
+        return {
+            selector: this.selector,
+            event: this.event,
+            name: this.name
+        }
+    }
 }
