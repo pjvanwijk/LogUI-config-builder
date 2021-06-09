@@ -59,10 +59,15 @@ export default class Picker {
         document.body.addEventListener('click', this.clickListener);
     }
 
-    stop() {
-        console.log('Selection made. Removing picker event listeners');
+    pause() {
+        console.log('Removing picker event listeners');
         document.body.removeEventListener('mousemove', this.mouseMoveListener);
         document.body.removeEventListener('click', this.clickListener);
+    }
+
+    stop() {
+        console.log('Destroying picker');
+        this.highlight.remove();
     }
 }
  
