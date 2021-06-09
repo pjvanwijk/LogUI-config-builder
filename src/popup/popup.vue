@@ -53,12 +53,12 @@
 
                 <h2>Element Tracking Configuration</h2>
                 <div>
-                    <button @click="activatePicker" class="btn btn-primary">Choose Element Listeners</button>                        
+                    <button @click.prevent="activatePicker" class="btn btn-primary">Choose Element Listeners</button>                        
                 </div>
 
                 <hr>
 
-                <button id="get-config-btn" class="btn btn-primary">Get Config</button>
+                <button @click.prevent="getConfig" id="get-config-btn" class="btn btn-primary">Get Config</button>
             </form> 
         </div>
     </div>
@@ -78,9 +78,16 @@ export default {
       };
     },
     methods: {
-        activatePicker(event) {
+        activatePicker() {
             this.port.postMessage({
                 command: 'activatePicker'
+            });
+            // I'm not sure if this is a good way to close the extension popup
+            window.close();
+        },
+        getConfig() {
+            this.port.postMessage({
+                command: 'exportLogUIConfigObject'
             });
         }
     },
