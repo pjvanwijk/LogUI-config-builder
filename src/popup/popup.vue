@@ -65,7 +65,6 @@
 </template>
 
 <script>
-import ApplicationSpecificData from '../model/application-specific/application-specific-data.js';
 import BrowserEvents from '../model/logui-configuration/browser-events.js';
 import LogUIConfiguration from '../model/logui-configuration/logui-configuration.js';
 import TrackingConfiguration from '../model/tracking-configuration/tracking-configuration.js';
