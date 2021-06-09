@@ -12,17 +12,18 @@ import SelectorEditor from './selector-editor.vue';
 
 console.log('LogUI extension content script loaded!');
 
-let trackingConfig = new TrackingConfiguration();
+let trackingConfig = null;
 let selectorEditorVue = null;
 let picker = null;
+let inEditMode = false;
 
 // Mountpoint for the selector editor UI
-const selectorEditMountId = 'logui-selector-edit-wrapper'
+const selectorEditMountId = 'logui-selector-edit-wrapper';
 
 // Element picker callback to get into selector edit mode when an element gets selected
 const onPickListener = (element) => {
   // Pause the picker because we are going into selector edit mode
-  picker.stop();
+  picker.pause();
   editSelector(element);
 };
 
@@ -33,18 +34,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     trackingConfig = message.trackingConfig;
     console.log(trackingConfig);
 
-    // Add event listener to the whole DOM 
-    picker = new Picker();
-    picker.onPickListener = onPickListener;
+    if (!inEditMode) {
+      // Add event listener to the whole DOM 
+      picker = new Picker();
+      picker.onPickListener = onPickListener;
 
-    // Initialize the selector editor
-    selectorEditorVue = new Vue({ render: h => h(SelectorEditor) });
-    // Add the selector editor UI placeholder
-    const selectorEditMount = document.createElement('div');
-    selectorEditMount.id = selectorEditMountId;
-    document.body.appendChild(selectorEditMount);
+      // Initialize the selector editor
+      selectorEditorVue = new Vue({ render: h => h(SelectorEditor) });
+      // Add the selector editor UI placeholder
+      const selectorEditMount = document.createElement('div');
+      selectorEditMount.id = selectorEditMountId;
+      document.body.appendChild(selectorEditMount);
 
-    picker.start();
+      picker.start();
+      inEditMode = true;
+    } else {
+      alert('Already in editing mode');
+    }
+  }
+
+  if (message.command && message.command === 'dismissPicker') {
+    dismissPicker();
   }
 });
 
@@ -55,6 +65,13 @@ function editSelector(selectedElement) {
   console.log(`Edit mode for ${getSelector(selectedElement)}`);
   // trackingConfig.trackingConfigurationValues.push(output);
   // console.log(trackingConfig);
+}
+
+// Reset the page's content
+function dismissPicker() {
+  picker.stop();
+  document.getElementById('logui-selector-editor-ui').remove();
+  inEditMode = false;
 }
 
 function getSelector(context) {

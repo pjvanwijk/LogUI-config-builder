@@ -56,6 +56,11 @@ const selectorEditorMessageHandler = (message, sender, sendResponse) => {
   if (message.command && message.command === 'addSelector') {
     console.log('Will add selector to my collection!');
   }
+  if (message.command && message.command === 'dismissPicker') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, { command: 'dismissPicker' });
+    });
+  }
   else defaultMessageHandler(message, sender, sendResponse);
 }
 
