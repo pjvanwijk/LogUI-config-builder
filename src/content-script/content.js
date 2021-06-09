@@ -33,24 +33,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log(`Received ${message.command} command`);
     trackingConfig = message.trackingConfig;
     console.log(trackingConfig);
+    activatePicker(trackingConfig);
+  }
 
-    if (!inEditMode) {
-      // Add event listener to the whole DOM 
-      picker = new Picker();
-      picker.onPickListener = onPickListener;
-
-      // Initialize the selector editor
-      selectorEditorVue = new Vue({ render: h => h(SelectorEditor) });
-      // Add the selector editor UI placeholder
-      const selectorEditMount = document.createElement('div');
-      selectorEditMount.id = selectorEditMountId;
-      document.body.appendChild(selectorEditMount);
-
-      picker.start();
-      inEditMode = true;
-    } else {
-      alert('Already in editing mode');
-    }
+  if (message.command && message.command === 'showLogUIConfigurationObject') {
+    document.querySelector('body').innerText = JSON.stringify(message.configObject, null, '\t');
   }
 
   if (message.command && message.command === 'dismissPicker') {
@@ -65,6 +52,26 @@ function editSelector(selectedElement) {
   console.log(`Edit mode for ${getSelector(selectedElement)}`);
   // trackingConfig.trackingConfigurationValues.push(output);
   // console.log(trackingConfig);
+}
+
+function activatePicker(trackingConfig) {
+  if (!inEditMode) {
+    // Add event listener to the whole DOM 
+    picker = new Picker();
+    picker.onPickListener = onPickListener;
+
+    // Initialize the selector editor
+    selectorEditorVue = new Vue({ render: h => h(SelectorEditor) });
+    // Add the selector editor UI placeholder
+    const selectorEditMount = document.createElement('div');
+    selectorEditMount.id = selectorEditMountId;
+    document.body.appendChild(selectorEditMount);
+
+    picker.start();
+    inEditMode = true;
+  } else {
+    alert('Already in editing mode');
+  }
 }
 
 // Reset the page's content
