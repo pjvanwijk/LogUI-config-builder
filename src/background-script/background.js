@@ -1,6 +1,7 @@
 import BrowserEvents from '../model/logui-configuration/browser-events';
 import LogUIConfiguration from '../model/logui-configuration/logui-configuration';
 import TrackingConfiguration from '../model/tracking-configuration/tracking-configuration';
+import TrackingConfigurationValue from '../model/tracking-configuration/tracking-configuration-value';
 
 // Background script listening to browser events
 console.log("Running on " + navigator.userAgent);
@@ -33,9 +34,37 @@ let trackingConfig = new TrackingConfiguration(0);
 
 // Load objects from storage
 chrome.storage.sync.get(['logUIConfig', 'trackingConfig'], (res) => {
-  logUIConfig = res.logUIConfig;
-  trackingConfig = res.trackingConfig;
+  logUIConfig = buildLogUIConfig(res.logUIConfig);
+  trackingConfig = buildTrackingConfig(res.trackingConfig);
 });
+
+// Reconstitute tracking config model from data
+const buildTrackingConfig = (data) => {
+  const res = new TrackingConfiguration(data.id);
+
+  res.trackingConfigurationValues = data.trackingConfigurationValues
+  .map((value) => new TrackingConfigurationValue(value.name, value.selector, value.eventName));
+ 
+  return res;
+}
+
+// Reconstitute logui config model from data
+const buildLogUIConfig = (data) => {
+  return new LogUIConfiguration(
+    data.id,
+    data.websocket,
+    data.authToken,
+    data.verboseMode,
+    new BrowserEvents(
+      data.browserEvents.eventsWhileScrolling,
+      data.browserEvents.URLChanges,
+      data.browserEvents.contextMenu,
+      data.browserEvents.pageFocus,
+      data.browserEvents.trackCursor,
+      data.browserEvents.pageResize
+    )
+  );
+}
 
 // Handles messages from the popup
 const popupMessageHandler = (message, port) => {
@@ -51,11 +80,30 @@ const popupMessageHandler = (message, port) => {
     if (message.command === 'updateLogUIConfig' && message.logUIConfig) {
       console.log('Updating logui config');
       console.log(message.logUIConfig);
-      logUIConfig = message.logUIConfig;
+      logUIConfig = buildLogUIConfig(message.logUIConfig);
     }
     if (message.command === 'getLogUIConfig') {
       console.log('Request message for logui config received');
       port.postMessage({ logUIConfig });
+    }
+    if (message.command === 'exportLogUIConfigObject') {
+      console.log('Request to export config object');
+      const configObject = getLogUIConfigObject();
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.tabs.sendMessage(tabs[0].id, {
+            command: 'showLogUIConfigurationObject',
+            configObject
+        });
+      });
+      
+      //  TODO: Show final config object in a new tab or window, or download
+      // chrome.tabs.create({ active: true }, tab => {
+      //   chrome.tabs.sendMessage(tab.id, {
+      //     command: 'showLogUIConfigurationObject',
+      //     configObject
+      //   });
+      // });
+
     }
   }
   else defaultMessageHandler(message, port);
@@ -92,6 +140,17 @@ chrome.runtime.onConnect.addListener((port) => {
     port.onDisconnect.addListener(saveModel);
   }
 });
+
+// Get the configuration object as required by LogUI
+function getLogUIConfigObject() {
+  const res = {
+    logUIConfiguration: logUIConfig.getValue,
+    applicationSpecificData: {},
+    trackingConfiguration: trackingConfig.getValue
+  }
+  console.log(res);
+  return res;
+}
 
 // Save the models
 function saveModel() {
