@@ -66,6 +66,11 @@ const buildLogUIConfig = (data) => {
   );
 }
 
+// Reconstitute a trackingconfigvalue model from data
+const buildTrackingConfigValue = (data) => {
+  return new TrackingConfigurationValue(data.name, data.selector, data.eventName);
+}
+
 // Handles messages from the popup
 const popupMessageHandler = (message, port) => {
   if (message.command) {
@@ -111,8 +116,11 @@ const popupMessageHandler = (message, port) => {
 
 // Handles messages from the selector editor
 const selectorEditorMessageHandler = (message, port) => {
-  if (message.command && message.command === 'addSelector') {
-    console.log('Will add selector to my collection!');
+  if (message.command && message.command === 'addTrackingConfigValue') {
+    console.log('Adding new tracking configuration value to collection');
+    trackingConfig.addTrackingConfigValue(
+      buildTrackingConfigValue(message.trackingConfigValue));
+    console.log(trackingConfig);
   }
   if (message.command && message.command === 'dismissPicker') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
