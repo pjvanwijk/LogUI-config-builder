@@ -17,6 +17,6 @@
       "js": ["content_bundle.js"]
     }
   ],
-  "permissions": ["storage", "contextMenus"]
+  "permissions": ["storage", "contextMenus", "tabs"]
   
 }
