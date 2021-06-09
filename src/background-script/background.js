@@ -40,13 +40,20 @@ chrome.storage.sync.get(['logUIConfig', 'trackingConfig'], (res) => {
 
 // Handles messages from the popup
 const popupMessageHandler = (message, sender, sendResponse) => {
-  if (message.command && message.command === 'activatePicker') {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, {
-          command: 'activatePicker',
-          trackingConfig
+  if (message.command) {
+    if (message.command === 'activatePicker') {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.tabs.sendMessage(tabs[0].id, {
+            command: 'activatePicker',
+            trackingConfig
+        });
       });
-    });
+    }
+    if (message.command === 'updateLogUIConfig' && message.logUIConfig) {
+      console.log('Updating logui config');
+      console.log(message.logUIConfig);
+      logUIConfig = message.logUIConfig;
+    }
   }
   else defaultMessageHandler(message, sender, sendResponse);
 }
