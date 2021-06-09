@@ -15,8 +15,8 @@ chrome.runtime.onInstalled.addListener(function() {
 
   // Add rightclick context menu
     chrome.contextMenus.create({
-      "id": "registerLogui",
-      "title": "Add LogUI event listener"
+      "id": "elementpicker",
+      "title": "Element picker"
     });
 });
 
@@ -24,8 +24,8 @@ chrome.runtime.onInstalled.addListener(function() {
 chrome.contextMenus.onClicked.addListener(function(info, tab) {
     console.log(info.menuItemId + ' clicked!');
     chrome.tabs.sendMessage(tab.id, {
-      command: 'activate-element-picker'
-  });
+      command: 'activatePicker'
+    });
 });
 
 // Initialize objects
@@ -38,24 +38,43 @@ chrome.storage.sync.get(['logUIConfig', 'trackingConfig'], (res) => {
   trackingConfig = res.trackingConfig;
 });
 
+// Handles messages from the popup
+const popupMessageHandler = (message, sender, sendResponse) => {
+  if (message.command && message.command === 'activatePicker') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, {
+          command: 'activatePicker',
+          trackingConfig
+      });
+    });
+  }
+  else defaultMessageHandler(message, sender, sendResponse);
+}
+
+// Handles messages from the selector editor
+const selectorEditorMessageHandler = (message, sender, sendResponse) => {
+  if (message.command && message.command === 'addSelector') {
+    console.log('Will add selector to my collection!');
+  }
+  else defaultMessageHandler(message, sender, sendResponse);
+}
+
+// Prints out the message
+const defaultMessageHandler = (message, sender, sendResponse) => {
+  console.log(`Received message: ${message}`);
+}
+
 // Listen for connections
 chrome.runtime.onConnect.addListener(function(port) {
-  if (port.name == "loguipopup") {
-    port.onMessage.addListener(function(message) {
-      if (message.command && message.command === 'activatePicker') {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          chrome.tabs.sendMessage(tabs[0].id, {
-              command: 'activatePicker',
-              trackingConfig
-          });
-        });
-      }
-      else console.log(`Received message: ${message}`);
-    });
-    port.onDisconnect.addListener(function() {
-      console.log('Disconnected, saving model');
-      saveModel();
-    });
+  if (port.name == 'loguipopup') {
+    console.log('New connection from logui popup');
+    port.onMessage.addListener(popupMessageHandler);
+    port.onDisconnect.addListener(saveModel);
+  }
+  if (port.name == 'loguiselectoreditor') {
+    console.log('New connection from logui selector editor');
+    port.onMessage.addListener(selectorEditorMessageHandler);
+    port.onDisconnect.addListener(saveModel);
   }
 });
 
