@@ -65,6 +65,7 @@
 </template>
 
 <script>
+import BrowserEvents from '../model/logui-configuration/browser-events.js';
 import LogUIConfiguration from '../model/logui-configuration/logui-configuration.js';
 import TrackingConfiguration from '../model/tracking-configuration/tracking-configuration.js';
 
@@ -72,9 +73,11 @@ export default {
     name: 'popupApp',
     data() {
       return {
-        logUIConfig: new LogUIConfiguration(),
+        logUIConfig: new LogUIConfiguration(0, '', '', true, 
+            new BrowserEvents(false, false, false, false, false, false)),
         trackingConfig: new TrackingConfiguration(),
-        port: null
+        port: null,
+        loaded: false
       };
     },
     methods: {
@@ -95,10 +98,12 @@ export default {
         logUIConfig: {
             handler(val) {
                 // Send a config update message on every change
-                this.port.postMessage({
-                    command: 'updateLogUIConfig',
-                    logUIConfig: val
-                });
+                if (this.loaded) {
+                    this.port.postMessage({
+                        command: 'updateLogUIConfig',
+                        logUIConfig: val
+                    });
+                }
             },
             deep: true
         }
@@ -109,9 +114,14 @@ export default {
 
         this.port.postMessage('LogUI popup is now live!');
         this.port.postMessage({ command: 'getLogUIConfig' });
+
+        // Populate model
         this.port.onMessage.addListener((message) => {
             if (message.logUIConfig) {
-                this.logUIConfig = message.logUIConfig;
+                this.logUIConfig =  LogUIConfiguration.fromValue(message.logUIConfig);
+                console.log('Fetched model from background:');
+                console.log(this.logUIConfig);
+                this.loaded = true;
             }
         });
     }
