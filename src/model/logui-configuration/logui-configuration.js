@@ -1,3 +1,5 @@
+import BrowserEvents from './browser-events'
+
 export default class LogUIConfiguration {
     constructor(id, websocket, authToken, verboseMode, browserEvents) {
         this.id = id;
@@ -13,5 +15,15 @@ export default class LogUIConfiguration {
             verbose: this.verboseMode,
             browserEvents: this.browserEvents.getValue
         };
+    }
+    
+    // Static factory method
+    static fromValue(value) {
+        return new LogUIConfiguration(
+            value.id,
+            value.websocket,
+            value.authToken,
+            value.verboseMode,
+            BrowserEvents.fromValue(value.browserEvents));
     }
 }

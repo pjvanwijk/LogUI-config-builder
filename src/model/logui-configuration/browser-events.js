@@ -1,7 +1,9 @@
 /**
  * https://github.com/logui-framework/client/wiki/Browser-Events#available-browser-events 
+ * Every browser event is assumed to be enabled when not specified
+ * Construction could probably be neater using a builder pattern.
  */ 
-export default class BrowserEvents {
+ export default class BrowserEvents {
     constructor(eventsWhileScrolling,
                 URLChanges,
                 contextMenu,
@@ -15,6 +17,7 @@ export default class BrowserEvents {
         this.trackCursor = trackCursor;
         this.pageResize = pageResize;
     }
+
     get getValue() {
         return {
             eventsWhileScrolling: this.eventsWhileScrolling,
@@ -25,4 +28,17 @@ export default class BrowserEvents {
             pageResize: this.pageResize
         };
     }
+
+    // Static factory method
+    static fromValue(value) {
+        return new BrowserEvents(
+            value.eventsWhileScrolling,
+            value.URLChanges,
+            value.contextMenu,
+            value.pageFocus,
+            value.trackCursor,
+            value.pageResize
+        )
+    }
+
 }
