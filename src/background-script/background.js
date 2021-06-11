@@ -1,4 +1,3 @@
-import BrowserEvents from '../model/logui-configuration/browser-events';
 import LogUIConfiguration from '../model/logui-configuration/logui-configuration';
 import TrackingConfiguration from '../model/tracking-configuration/tracking-configuration';
 import TrackingConfigurationValue from '../model/tracking-configuration/tracking-configuration-value';
@@ -6,13 +5,28 @@ import TrackingConfigurationValue from '../model/tracking-configuration/tracking
 // Background script listening to browser events
 console.log("Running on " + navigator.userAgent);
 
+// Initialize default domain objects
+let logUIConfig = LogUIConfiguration.fromValue({
+  id: 0, 
+  websocket: '', 
+  authToken: '', 
+  verboseMode: true,
+  browserEvents: {
+    eventsWhileScrolling: true,
+    URLChanges: true,
+    contextMenu: true,
+    pageFocus: true,
+    trackCursor: true,
+    pageResize: true
+  }
+});
+
+let trackingConfig = new TrackingConfiguration(0);
+
 // Initialization after installation
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.set({
-    logUIConfig: new LogUIConfiguration(0, '', '', true, new BrowserEvents()),
-    trackingConfig: new TrackingConfiguration(0)
-  }, () => {});
-
+  console.log('Thanks for installing the experimental LogUI configuration builder!');
+  init();
   // Add rightclick context menu
   chrome.contextMenus.create({
     "id": "elementpicker",
@@ -20,22 +34,31 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+// Browser startup hook
+chrome.runtime.onStartup.addListener(() => {
+  init();
+});
+
+// Load objects from storage when started
+function init() {
+  chrome.storage.sync.get(['logUIConfig', 'trackingConfig'], (res) => {
+    if (res.logUIConfig) {
+      console.log('Previous configuration found. Using that one');
+      logUIConfig = buildLogUIConfig(res.logUIConfig);
+      trackingConfig = buildTrackingConfig(res.trackingConfig);
+    }
+    else chrome.storage.sync.set({ logUIConfig, trackingConfig }, () => {
+      console.log('No previous config found. Using default.');
+    });
+  });
+}
+
 // Add listeners to contextmenus
 chrome.contextMenus.onClicked.addListener((info, tab) => {
     console.log(info.menuItemId + ' clicked!');
     chrome.tabs.sendMessage(tab.id, {
       command: 'activatePicker'
     });
-});
-
-// Initialize objects
-let logUIConfig = new LogUIConfiguration(0, '', '', true, new BrowserEvents());
-let trackingConfig = new TrackingConfiguration(0);
-
-// Load objects from storage
-chrome.storage.sync.get(['logUIConfig', 'trackingConfig'], (res) => {
-  logUIConfig = buildLogUIConfig(res.logUIConfig);
-  trackingConfig = buildTrackingConfig(res.trackingConfig);
 });
 
 // Reconstitute tracking config model from data
@@ -50,20 +73,7 @@ const buildTrackingConfig = (data) => {
 
 // Reconstitute logui config model from data
 const buildLogUIConfig = (data) => {
-  return new LogUIConfiguration(
-    data.id,
-    data.websocket,
-    data.authToken,
-    data.verboseMode,
-    new BrowserEvents(
-      data.browserEvents.eventsWhileScrolling,
-      data.browserEvents.URLChanges,
-      data.browserEvents.contextMenu,
-      data.browserEvents.pageFocus,
-      data.browserEvents.trackCursor,
-      data.browserEvents.pageResize
-    )
-  );
+  return LogUIConfiguration.fromValue(data);
 }
 
 // Reconstitute a trackingconfigvalue model from data
@@ -83,8 +93,8 @@ const popupMessageHandler = (message, port) => {
       });
     }
     if (message.command === 'updateLogUIConfig' && message.logUIConfig) {
-      console.log('Updating logui config');
-      console.log(message.logUIConfig);
+      // console.log('Updating logui config');
+      // console.log(message.logUIConfig);
       logUIConfig = buildLogUIConfig(message.logUIConfig);
     }
     if (message.command === 'getLogUIConfig') {
@@ -153,7 +163,7 @@ chrome.runtime.onConnect.addListener((port) => {
 function getLogUIConfigObject() {
   const res = {
     logUIConfiguration: logUIConfig.getValue,
-    applicationSpecificData: {},
+    // applicationSpecificData: {},
     trackingConfiguration: trackingConfig.getValue
   }
   console.log(res);
