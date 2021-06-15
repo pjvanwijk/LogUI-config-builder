@@ -1,16 +1,23 @@
 <template>
+    <!-- <iframe> -->
     <div class="container fixed-top bg-light" id="logui-selector-editor-ui">
             <h1>LogUI Tracking Options</h1>
             <h3>Name: <textarea v-model="name"></textarea></h3>
             <h3>Selector: {{selector}}</h3>
-            <h3>Specificity: {{specificity}}</h3>
+            <!-- <h3>Specificity: {{specificity}}</h3> -->
+            <vue-slider 
+                v-model="selector"
+                :data="selectors"
+                :adsorb="true"
+                :marks="true"
+            />
             <h3>Event: {{selectedEvent}}</h3>
             <!-- <div class="dropdown"> -->
                 <!-- <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"> -->
                     <!-- Add listener -->
                 <!-- </button> -->
                 <!-- <div class="dropdown-menu"> -->
-                    <!-- <a v-for="event in events" :key="event" class="dropdown-item" href="#">{{event}}</a> -->
+                    <!-- <a v-for="event in availableEvents" :key="event" class="dropdown-item" href="#">{{event}}</a> -->
                 <!-- </div> -->
             <!-- </div> -->
             <button v-for="event in availableEvents" :key="event" class="btn" @click="selectedEvent = event">{{event}}</button>
@@ -18,6 +25,7 @@
             <button class="btn btn-primary" @click="done">Add to tracking config</button>
             <button class="btn btn-danger" @click="cancel">Cancel</button>
     </div>
+    <!-- </iframe> -->
 </template>
 
 <style scoped lang="css" src="bootstrap/dist/css/bootstrap.css"></style>
@@ -27,7 +35,7 @@
         margin-top: 10px;
         opacity: 0.95;
     }
-    .btn {
+    #logui-selector-editor-ui > .btn {
         margin-top: 10px;
     }
 </style>
@@ -36,13 +44,15 @@
 // import 'bootstrap';
 // import bootstrap from 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import TrackingConfigurationValue from '../model/tracking-configuration/tracking-configuration-value';
+import VueSlider from 'vue-slider-component';
+import 'vue-slider-component/theme/antd.css';
 
 export default {
     data() {
         return {
             selector: 'none',
+            selectors: ['html', 'body', 'div', 'p'],
             specificity: 0,
-            port: null,
             name: 'tracker',
             selectedEvent: 'click',
             availableEvents: ['click', 'focus']
@@ -50,24 +60,32 @@ export default {
     },
     methods: {
         done() {
-            this.port.postMessage({
+            chrome.runtime.sendMessage({
+                component: 'loguiselectoreditor',
                 command: 'addTrackingConfigValue',
                 trackingConfigValue: new TrackingConfigurationValue(this.name, this.selector, this.selectedEvent)
             });
-            this.port.postMessage({ command: 'dismissPicker' });
+            this.dismiss();
         },
         cancel() {
-            this.port.postMessage({
-                command: 'dismissPicker'
+            this.dismiss();
+        },
+        dismiss() {
+            chrome.runtime.sendMessage({
+                component: 'loguiselectoreditor',
+                command: 'dismissPicker',
             });
         }
     },
-    created() {
-        this.port = chrome.runtime.connect({
-            name: 'loguiselectoreditor'
+    created() {    
+        chrome.runtime.sendMessage({ 
+            component: 'loguiselectoreditor', 
+            message: 'LogUI selector editor is now live!'
         });
-
-        this.port.postMessage('LogUI selector editor is now live!');
     },
+    // props: [selector],
+    components: {
+        VueSlider
+    }
 }
 </script>
