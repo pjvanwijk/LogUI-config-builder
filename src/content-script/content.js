@@ -1,7 +1,8 @@
-import TrackingConfiguration from "../model/tracking-configuration/tracking-configuration";
 import Picker from "./picker";
 import Vue from 'vue';
 import SelectorEditor from './selector-editor.vue';
+// This makes it possible to dynamically create selector editor components
+const SelectorEditorVueComponent = Vue.extend(SelectorEditor);
 
 /**
  * This is a content script (https://developer.chrome.com/docs/extensions/mv3/content_scripts/) 
@@ -48,20 +49,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // Go into selector edit mode
 function editSelector(selectedElement) {
   console.log(`mounting vue component on ${selectorEditMountId}`);
+  const availableSelectors = getAvailableSelectors(selectedElement);
+  // Initialize the selector editor
+  selectorEditorVue = new SelectorEditorVueComponent({
+    propsData: {
+      // All the selectors that a user can choose from
+      availableSelectors: availableSelectors
+    }
+  });
+
   selectorEditorVue.$mount(`#${selectorEditMountId}`);
-  console.log(`Edit mode for ${getSelector(selectedElement)}`);
-  // trackingConfig.trackingConfigurationValues.push(output);
-  // console.log(trackingConfig);
+  // console.log(`Edit mode for ${getSelector(selectedElement)}`);
 }
 
-function activatePicker(trackingConfig) {
+function activatePicker() {
   if (!inEditMode) {
     // Add event listener to the whole DOM 
     picker = new Picker();
     picker.onPickListener = onPickListener;
 
-    // Initialize the selector editor
-    selectorEditorVue = new Vue({ render: h => h(SelectorEditor) });
     // Add the selector editor UI placeholder
     const selectorEditMount = document.createElement('div');
     selectorEditMount.id = selectorEditMountId;
@@ -81,19 +87,21 @@ function dismissPicker() {
   inEditMode = false;
 }
 
-function getSelector(context) {
+
+function getAvailableSelectors(context) {
   let index, pathSelector, localName;
-  
+  let selectors = [];
+
   if (context == "null") throw "not an DOM reference";
   index = getIndex(context);
   
   // High specificity
   if (context.id) 
-    return `#${context.id}`;
+    selectors.push(`#${context.id}`);
   
   // Medium specificity
   if (context.className)
-    return `.${context.className}`;
+    selectors.push(`.${context.className}`);
   
   // Low specificity 
   while (context.tagName) {
@@ -101,7 +109,9 @@ function getSelector(context) {
     context = context.parentNode;
   }
   pathSelector = pathSelector + `:nth-of-type(${index})`;
-  return pathSelector;
+  selectors.push(pathSelector);
+  
+  return selectors.reverse();
 }
   
 // get index for nth of type element

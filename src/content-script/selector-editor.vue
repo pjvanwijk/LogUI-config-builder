@@ -9,7 +9,6 @@
                 v-model="selector"
                 :data="selectors"
                 :adsorb="true"
-                :marks="true"
             />
             <h3>Event: {{selectedEvent}}</h3>
             <!-- <div class="dropdown"> -->
@@ -50,8 +49,8 @@ import 'vue-slider-component/theme/antd.css';
 export default {
     data() {
         return {
-            selector: 'none',
-            selectors: ['html', 'body', 'div', 'p'],
+            selector: this.availableSelectors[this.availableSelectors.length - 1],
+            selectors: this.availableSelectors,
             specificity: 0,
             name: 'tracker',
             selectedEvent: 'click',
@@ -83,7 +82,11 @@ export default {
             message: 'LogUI selector editor is now live!'
         });
     },
-    // props: [selector],
+    
+    props: {
+        availableSelectors: Array
+    },
+
     components: {
         VueSlider
     }
