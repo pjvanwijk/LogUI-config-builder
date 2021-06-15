@@ -110,10 +110,11 @@ const handleLogUIPopupMessage = (message, sender, sendResponse) => {
       saveModel();
       sendResponse('OK');
     }
-    if (message.command === 'getLogUIConfig') {
-      console.log('Request message for logui config received');
-      sendResponse({ logUIConfig });
-    }
+    /* No longer needed because popup can get this directly from storage API*/
+    // if (message.command === 'getLogUIConfig') {
+    //   console.log('Request message for logui config received');
+    //   sendResponse({ logUIConfig });
+    // }
     if (message.command === 'exportLogUIConfigObject') {
       console.log('Request to export config object');
       const configObject = getLogUIConfigObject();

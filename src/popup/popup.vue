@@ -76,21 +76,26 @@ export default {
         logUIConfig: new LogUIConfiguration(0, '', '', true, 
             new BrowserEvents(false, false, false, false, false, false)),
         trackingConfig: new TrackingConfiguration(),
-        port: null,
         loaded: false
       };
     },
     methods: {
         activatePicker() {
-            this.port.postMessage({
-                command: 'activatePicker'
+            chrome.runtime.sendMessage({
+                component: 'loguipopup',
+                command: 'activatePicker',
+            }, (response) => {
+                // I'm not sure if this is a good way to close the extension popup
+                if (response === 'OK') {
+                    console.log('CLOSE POPUP');
+                    window.close();
+                }
             });
-            // I'm not sure if this is a good way to close the extension popup
-            window.close();
         },
         getConfig() {
-            this.port.postMessage({
-                command: 'exportLogUIConfigObject'
+            chrome.runtime.sendMessage({
+                component: 'loguipopup',
+                command: 'exportLogUIConfigObject',
             });
         }
     },
@@ -99,7 +104,8 @@ export default {
             handler(val) {
                 // Send a config update message on every change
                 if (this.loaded) {
-                    this.port.postMessage({
+                    chrome.runtime.sendMessage({
+                        component: 'loguipopup',
                         command: 'updateLogUIConfig',
                         logUIConfig: val
                     });
@@ -109,20 +115,19 @@ export default {
         }
     },
     created() {
-        // Initiate connection with background script
-        this.port = chrome.runtime.connect({ name: 'loguipopup' });
-
-        this.port.postMessage('LogUI popup is now live!');
-        this.port.postMessage({ command: 'getLogUIConfig' });
+        chrome.runtime.sendMessage({
+            component: 'loguipopup',
+            message: 'LogUI popup is now live!'
+        });
 
         // Populate model
-        this.port.onMessage.addListener((message) => {
-            if (message.logUIConfig) {
-                this.logUIConfig =  LogUIConfiguration.fromValue(message.logUIConfig);
-                console.log('Fetched model from background:');
+        chrome.storage.sync.get('logUIConfig', (res) => {
+            if (res.logUIConfig) {
+                this.logUIConfig = LogUIConfiguration.fromValue(res.logUIConfig);
+                console.log('Fetched model:');
                 console.log(this.logUIConfig);
-                this.loaded = true;
             }
+            this.loaded = true;
         });
     }
 }
