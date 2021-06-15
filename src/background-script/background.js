@@ -39,6 +39,16 @@ chrome.runtime.onStartup.addListener(() => {
   init();
 });
 
+// Listen for messages
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.component == 'loguiselectoreditor') {
+    handleSelectorEditorMessage(message, sender, sendResponse);
+  }
+  if (message.component == 'loguipopup') {
+    handleLogUIPopupMessage(message, sender, sendResponse);
+  }
+});
+
 // Load objects from storage when started
 function init() {
   chrome.storage.sync.get(['logUIConfig', 'trackingConfig'], (res) => {
@@ -66,7 +76,7 @@ const buildTrackingConfig = (data) => {
   const res = new TrackingConfiguration(data.id);
 
   res.trackingConfigurationValues = data.trackingConfigurationValues
-  .map((value) => new TrackingConfigurationValue(value.name, value.selector, value.eventName));
+  .map((value) => buildTrackingConfigValue(value));
  
   return res;
 }
@@ -82,9 +92,10 @@ const buildTrackingConfigValue = (data) => {
 }
 
 // Handles messages from the popup
-const popupMessageHandler = (message, port) => {
+const handleLogUIPopupMessage = (message, sender, sendResponse) => {
   if (message.command) {
     if (message.command === 'activatePicker') {
+      sendResponse('OK');
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         chrome.tabs.sendMessage(tabs[0].id, {
             command: 'activatePicker',
@@ -96,10 +107,12 @@ const popupMessageHandler = (message, port) => {
       // console.log('Updating logui config');
       // console.log(message.logUIConfig);
       logUIConfig = buildLogUIConfig(message.logUIConfig);
+      saveModel();
+      sendResponse('OK');
     }
     if (message.command === 'getLogUIConfig') {
       console.log('Request message for logui config received');
-      port.postMessage({ logUIConfig });
+      sendResponse({ logUIConfig });
     }
     if (message.command === 'exportLogUIConfigObject') {
       console.log('Request to export config object');
@@ -121,11 +134,11 @@ const popupMessageHandler = (message, port) => {
 
     }
   }
-  else defaultMessageHandler(message, port);
+  else handleDefaultMessage(message, sender);
 }
 
 // Handles messages from the selector editor
-const selectorEditorMessageHandler = (message, port) => {
+const handleSelectorEditorMessage = (message, sender, _sendResponse) => {
   if (message.command && message.command === 'addTrackingConfigValue') {
     console.log('Adding new tracking configuration value to collection');
     trackingConfig.addTrackingConfigValue(
@@ -137,27 +150,13 @@ const selectorEditorMessageHandler = (message, port) => {
       chrome.tabs.sendMessage(tabs[0].id, { command: 'dismissPicker' });
     });
   }
-  else defaultMessageHandler(message, port);
+  else handleDefaultMessage(message, sender);
 }
 
 // Prints out the message
-const defaultMessageHandler = (message, port) => {
-  console.log(`Received message: ${message} from ${port.name}`);
+const handleDefaultMessage = (message, sender) => {
+  console.log(`Received message: ${message} from ${sender}`);
 }
-
-// Listen for connections
-chrome.runtime.onConnect.addListener((port) => {
-  if (port.name == 'loguipopup') {
-    console.log('New connection from logui popup');
-    port.onMessage.addListener((message) => popupMessageHandler(message, port));
-    port.onDisconnect.addListener(saveModel);
-  }
-  if (port.name == 'loguiselectoreditor') {
-    console.log('New connection from logui selector editor');
-    port.onMessage.addListener((message) => selectorEditorMessageHandler(message, port));
-    port.onDisconnect.addListener(saveModel);
-  }
-});
 
 // Get the configuration object as required by LogUI
 function getLogUIConfigObject() {
