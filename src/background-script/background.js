@@ -56,6 +56,8 @@ function init() {
       console.log('Previous configuration found. Using that one');
       logUIConfig = buildLogUIConfig(res.logUIConfig);
       trackingConfig = buildTrackingConfig(res.trackingConfig);
+      console.log(logUIConfig);
+      console.log(trackingConfig);
     }
     else chrome.storage.sync.set({ logUIConfig, trackingConfig }, () => {
       console.log('No previous config found. Using default.');
@@ -73,22 +75,12 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 // Reconstitute tracking config model from data
 const buildTrackingConfig = (data) => {
-  const res = new TrackingConfiguration(data.id);
-
-  res.trackingConfigurationValues = data.trackingConfigurationValues
-  .map((value) => buildTrackingConfigValue(value));
- 
-  return res;
+  return TrackingConfiguration.fromValue(data); 
 }
 
 // Reconstitute logui config model from data
 const buildLogUIConfig = (data) => {
   return LogUIConfiguration.fromValue(data);
-}
-
-// Reconstitute a trackingconfigvalue model from data
-const buildTrackingConfigValue = (data) => {
-  return new TrackingConfigurationValue(data.name, data.selector, data.eventName);
 }
 
 // Handles messages from the popup
@@ -142,9 +134,9 @@ const handleLogUIPopupMessage = (message, sender, sendResponse) => {
 const handleSelectorEditorMessage = (message, sender, _sendResponse) => {
   if (message.command && message.command === 'addTrackingConfigValue') {
     console.log('Adding new tracking configuration value to collection');
-    trackingConfig.addTrackingConfigValue(
-      buildTrackingConfigValue(message.trackingConfigValue));
+    trackingConfig.addTrackingConfigValue(TrackingConfigurationValue.fromValue(message.trackingConfigValue));
     console.log(trackingConfig);
+    saveModel();
   }
   if (message.command && message.command === 'dismissPicker') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {

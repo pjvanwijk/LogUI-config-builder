@@ -132,12 +132,11 @@ export default {
             message: 'LogUI popup is now live!'
         });
 
-
-        // TODO: ALSO LOAD TRACKING CONFIGURATION
         // Populate model
-        chrome.storage.sync.get('logUIConfig', (res) => {
+        chrome.storage.sync.get(['logUIConfig', 'trackingConfig'], (res) => {
             if (res.logUIConfig) {
                 this.logUIConfig = LogUIConfiguration.fromValue(res.logUIConfig);
+                this.trackingConfig = TrackingConfiguration.fromValue(res.trackingConfig);
                 console.log('Fetched model:');
                 console.log(this.logUIConfig);
             }
