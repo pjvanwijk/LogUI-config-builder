@@ -58,7 +58,8 @@
 
                 <hr>
 
-                <button @click.prevent="getConfig" id="get-config-btn" class="btn btn-primary">Get Config</button>
+                <a class="btn btn-primary" :href="jsonDownloadUri" role="button" download="config.json">Download JSON</a>
+                <!-- <button @click.prevent="getConfig" id="get-config-btn" class="btn btn-primary">Preview (experimental)</button> -->
             </form> 
         </div>
     </div>
@@ -99,6 +100,17 @@ export default {
             });
         }
     },
+    computed: {
+        jsonDownloadUri() {
+            const res = {
+                logUIConfiguration: this.logUIConfig.getValue,
+                // applicationSpecificData: {},
+                trackingConfiguration: this.trackingConfig.getValue
+            }
+            const data = encodeURIComponent(JSON.stringify(res));
+            return `data:text/json;charset=utf-8,${data}`;
+        }
+    },
     watch: {
         logUIConfig: {
             handler(val) {
@@ -120,6 +132,8 @@ export default {
             message: 'LogUI popup is now live!'
         });
 
+
+        // TODO: ALSO LOAD TRACKING CONFIGURATION
         // Populate model
         chrome.storage.sync.get('logUIConfig', (res) => {
             if (res.logUIConfig) {
