@@ -100,8 +100,11 @@ function getAvailableSelectors(context) {
     selectors.push(`#${context.id}`);
   
   // Medium specificity
-  if (context.className)
-    selectors.push(`.${context.className}`);
+  if (context.className) {
+    const classSelector = context.className.split(' ')
+      .reduce((total, currentValue) => total.concat('.', currentValue), '');
+    selectors.push(classSelector);
+  }
   
   // Low specificity 
   while (context.tagName) {
