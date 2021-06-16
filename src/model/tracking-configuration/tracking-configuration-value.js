@@ -10,8 +10,12 @@ export default class TrackingConfigurationValue {
     get getValue() {
         return {
             selector: this.selector,
-            event: this.event,
+            event: this.eventName,
             name: this.name
         }
+    }
+    // Static factory method
+    static fromValue(value) {
+        return new TrackingConfigurationValue(value.name, value.selector, value.eventName);
     }
 }

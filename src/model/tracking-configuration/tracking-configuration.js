@@ -1,3 +1,5 @@
+import TrackingConfigurationValue from "./tracking-configuration-value";
+
 export default class TrackingConfiguration {
     constructor(id) {
         this.id = id;
@@ -14,5 +16,13 @@ export default class TrackingConfiguration {
 
     addTrackingConfigValue(trackingConfigValue) {
         this.trackingConfigurationValues.push(trackingConfigValue);
+    }
+
+    // Static factory method
+    static fromValue(value) {
+        const res = new TrackingConfiguration(value.id);
+        res.trackingConfigurationValues = value.trackingConfigurationValues
+            .map((tvalue) => TrackingConfigurationValue.fromValue(tvalue));
+        return res;
     }
 }
