@@ -2,13 +2,14 @@
     <!-- <iframe> -->
     <div class="container fixed-top bg-light" id="logui-selector-editor-ui">
             <h1>LogUI Tracking Options</h1>
-            <h3>Name: <textarea v-model="name"></textarea></h3>
+            <h3>Name: <input v-model="name"/></h3>
             <h3>Selector: {{selector}}</h3>
             <!-- <h3>Specificity: {{specificity}}</h3> -->
             <vue-slider 
                 v-model="selector"
                 :data="selectors"
                 :adsorb="true"
+                :width="150"
             />
             <h3>Event: {{selectedEvent}}</h3>
             <!-- <div class="dropdown"> -->
