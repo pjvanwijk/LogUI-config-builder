@@ -80,7 +80,7 @@ export default {
     watch: {
         selector: {
             handler(value) {
-                this.$emit("specificityChanged", value);
+                this.$emit("selectorChanged", value);
             }
         }
     },
