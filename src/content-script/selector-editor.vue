@@ -77,6 +77,13 @@ export default {
             });
         }
     },
+    watch: {
+        selector: {
+            handler(value) {
+                this.$emit("specificityChanged", value);
+            }
+        }
+    },
     created() {    
         chrome.runtime.sendMessage({ 
             component: 'loguiselectoreditor', 
