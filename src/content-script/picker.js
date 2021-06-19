@@ -50,6 +50,26 @@ export default class Picker {
         };
     }
 
+    highlightBySelector(selector) {
+        console.log(`highlighting ${selector}`);
+        //Remove all logui-highlight class elements and replace them with new ones defined by the selector
+        document.querySelectorAll('.logui-highlight').forEach(element => element.remove());
+        document.querySelectorAll(selector).forEach((element) => {
+            const elHighlight = document.createElement('div');
+            elHighlight.style.position = 'absolute';
+
+            elHighlight.style.background = '#46509E';
+            elHighlight.style.opacity = '0.5'
+            elHighlight.classList.add('logui-highlight');
+            document.body.appendChild(elHighlight);
+            const box = element.getBoundingClientRect();
+            elHighlight.style.width = `${box.width}px`;
+            elHighlight.style.height = `${box.height}px`;
+            elHighlight.style.top = `${box.top + window.scrollY}px`;
+            elHighlight.style.left = `${box.left + window.scrollX}px`;
+        });
+    }
+
     start() {
         console.log('Adding picker event listeners to document body');
         // Highlight the current element's bounding box on mouse over
@@ -63,11 +83,12 @@ export default class Picker {
         console.log('Removing picker event listeners');
         document.body.removeEventListener('mousemove', this.mouseMoveListener);
         document.body.removeEventListener('click', this.clickListener);
+        this.highlight.remove();
     }
 
     stop() {
         console.log('Destroying picker');
-        this.highlight.remove();
+        document.querySelectorAll('.logui-highlight').forEach(element => element.remove());
     }
 }
  
