@@ -55,7 +55,24 @@
                 <div>
                     <button @click.prevent="activatePicker" class="btn btn-primary">Choose Element Listeners</button>                        
                 </div>
-
+                <hr>
+                <h2>Trackers</h2>                
+                <table class="table">
+                <thead>
+                    <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Selector</th>
+                    <th scope="col">Event</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="config in trackingConfig.trackingConfigurationValues" :key="config.name">
+                    <td>{{config.name}}</td>
+                    <td>{{config.selector}}</td>
+                    <td>{{config.eventName}}</td>
+                    </tr>
+                </tbody>
+                </table>
                 <hr>
 
                 <a class="btn btn-primary" :href="jsonDownloadUri" role="button" download="config.json">Download JSON</a>
@@ -76,7 +93,7 @@ export default {
       return {
         logUIConfig: new LogUIConfiguration(0, '', '', true, 
             new BrowserEvents(false, false, false, false, false, false)),
-        trackingConfig: new TrackingConfiguration(),
+        trackingConfig: new TrackingConfiguration(0),
         loaded: false
       };
     },
@@ -139,10 +156,10 @@ export default {
                 this.trackingConfig = TrackingConfiguration.fromValue(res.trackingConfig);
                 console.log('Fetched model:');
                 console.log(this.logUIConfig);
+                console.log(this.trackingConfig);
             }
             this.loaded = true;
         });
     }
 }
 </script>
-
