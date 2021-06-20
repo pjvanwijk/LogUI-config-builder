@@ -8,6 +8,9 @@ module.exports = {
         background: ['./src/background-script/background.js'],
         content: ['./src/content-script/content.js']
     },
+    optimization: {
+        minimize: false
+    },
     module: {
         rules: [
             // {
@@ -18,12 +21,12 @@ module.exports = {
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader']
             },
-            // {
-            //     test: /\.svg$/,
-            //     use: ['svg-url-loader']
-            // },
             {
-                test: /\.(png|jpg|gif|svg)$/,
+                test: /\.svg$/,
+                use: ['svg-url-loader']
+            },
+            {
+                test: /\.(png|jpg|gif)$/,
                 loader: 'file-loader',
                 options: {
                     name: '[name].[ext]'
@@ -37,7 +40,8 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: '[name]_bundle.js'
+        filename: '[name]_bundle.js',
+        publicPath: '/'
     },
     plugins: [
         new HtmlWebpackPlugin({
