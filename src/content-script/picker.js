@@ -51,23 +51,28 @@ export default class Picker {
     }
 
     highlightBySelector(selector) {
-        console.log(`highlighting ${selector}`);
-        //Remove all logui-highlight class elements and replace them with new ones defined by the selector
-        document.querySelectorAll('.logui-highlight').forEach(element => element.remove());
-        document.querySelectorAll(selector).forEach((element) => {
-            const elHighlight = document.createElement('div');
-            elHighlight.style.position = 'absolute';
+        if (selector === '*') {
+            // Putting a highlight over each and every element in the DOM is a bad idea, 
+            // so we just highlight the body as that reaches over the whole page.
+            this.highlightBySelector('body');
+        } else {
+            //Remove all logui-highlight class elements and replace them with new ones defined by the selector
+            document.querySelectorAll('.logui-highlight').forEach(element => element.remove());
+            document.querySelectorAll(selector).forEach((element) => {
+                const elHighlight = document.createElement('div');
+                elHighlight.style.position = 'absolute';
 
-            elHighlight.style.background = '#46509E';
-            elHighlight.style.opacity = '0.5'
-            elHighlight.classList.add('logui-highlight');
-            document.body.appendChild(elHighlight);
-            const box = element.getBoundingClientRect();
-            elHighlight.style.width = `${box.width}px`;
-            elHighlight.style.height = `${box.height}px`;
-            elHighlight.style.top = `${box.top + window.scrollY}px`;
-            elHighlight.style.left = `${box.left + window.scrollX}px`;
-        });
+                elHighlight.style.background = '#46509E';
+                elHighlight.style.opacity = '0.5'
+                elHighlight.classList.add('logui-highlight');
+                document.body.appendChild(elHighlight);
+                const box = element.getBoundingClientRect();
+                elHighlight.style.width = `${box.width}px`;
+                elHighlight.style.height = `${box.height}px`;
+                elHighlight.style.top = `${box.top + window.scrollY}px`;
+                elHighlight.style.left = `${box.left + window.scrollX}px`;
+            });
+        }
     }
 
     start() {
