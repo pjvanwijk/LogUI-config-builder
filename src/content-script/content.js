@@ -58,7 +58,16 @@ function editSelector(selectedElement) {
     }
   });
 
+  // FIXME: Couldn't figure out how to emit the selectorChanged event from the vue instance when it's mounted
+  picker.highlightBySelector(availableSelectors[availableSelectors.length - 1]);
+  
+  // Highlight selected elements when interacting with the specificity slider
+  selectorEditorVue.$on('selectorChanged', (selector) => {
+    picker.highlightBySelector(selector);
+  });
+
   selectorEditorVue.$mount(`#${selectorEditMountId}`);
+
   // console.log(`Edit mode for ${getSelector(selectedElement)}`);
 }
 
@@ -89,34 +98,77 @@ function dismissPicker() {
 
 
 function getAvailableSelectors(context) {
-  let index, pathSelector, localName;
   let selectors = [];
 
   if (context == "null") throw "not an DOM reference";
-  index = getIndex(context);
-  
-  // High specificity
+
+  // Highest specificity (id)
   if (context.id) 
-    selectors.push(`#${context.id}`);
-  
-  // Medium specificity
-  if (context.className) {
-    const classSelector = context.className.split(' ')
-      .reduce((total, currentValue) => total.concat('.', currentValue), '');
-    selectors.push(classSelector);
+    selectors.push(getElementId(context));
+  else {
+    // High specificity (element path selector)
+    selectors.push(getElementPathSelector(context));
   }
-  
-  // Low specificity 
-  while (context.tagName) {
-    pathSelector = context.localName + (pathSelector ? " > " + pathSelector : "");
-    context = context.parentNode;
-  }
-  pathSelector = pathSelector + `:nth-of-type(${index})`;
-  selectors.push(pathSelector);
-  
+
+  // Medium specificity (class selector)
+  if (context.className) 
+    selectors.push(getElementClassSelector(context));
+
+  // Low specificity (sibling elements)
+  selectors.push(getElementSiblingSelector(context));
+
+  // Very low specificity (name of the html element)
+  selectors.push(context.localName);
+
+  // Lowest specificity: universal selector, matches all elements
+  selectors.push('*');
+
   return selectors.reverse();
 }
-  
+
+// Get the id of an element
+function getElementId(context) {
+  return `#${context.id}`;
+}
+
+// Element DOM tree location selector, a specific path of elements
+function getElementPathSelector(context) {
+  let pathSelector;
+  let ctx = context;
+  while (ctx.tagName) {
+    let index = getIndex(ctx);
+    if (ctx.id) {
+      // If we reached a parent element with an id, the specificity is high enough
+      pathSelector = `${ctx.localName}#${ctx.id}${(pathSelector ? ' > ' + pathSelector : '')}`;
+      break;
+    }
+    else if (ctx.className)
+      pathSelector = `${ctx.localName}${getElementClassSelector(ctx)}:nth-of-type(${index})${(pathSelector ? ' > ' + pathSelector : '')}`;
+    else
+      pathSelector = `${ctx.localName}:nth-of-type(${index})${(pathSelector ? ' > ' + pathSelector : '')}`;
+    ctx = ctx.parentNode;
+  }
+  return `${pathSelector}`;
+}
+
+// Classname selector
+function getElementClassSelector(context) {
+  return context.className.split(' ')
+    .reduce((total, currentValue) => total.concat('.', currentValue), '');
+}
+
+// Sibling elements selector
+function getElementSiblingSelector(context) {
+  let pathSelector;
+  let ctx = context;
+  let index = getIndex(context);
+  while (ctx.tagName) {
+    pathSelector = ctx.localName + (pathSelector ? " > " + pathSelector : "");
+    ctx = ctx.parentNode;
+  }
+  return pathSelector + `:nth-of-type(${index})`;
+}
+
 // get index for nth of type element
 function getIndex(node) {
   let i = 1;
