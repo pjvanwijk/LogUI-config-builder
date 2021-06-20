@@ -6,26 +6,13 @@ import TrackingConfigurationValue from '../model/tracking-configuration/tracking
 console.log("Running on " + navigator.userAgent);
 
 // Initialize default domain objects
-let logUIConfig = LogUIConfiguration.fromValue({
-  id: 0, 
-  websocket: '', 
-  authToken: '', 
-  verboseMode: true,
-  browserEvents: {
-    eventsWhileScrolling: true,
-    URLChanges: true,
-    contextMenu: true,
-    pageFocus: true,
-    trackCursor: true,
-    pageResize: true
-  }
-});
-
-let trackingConfig = new TrackingConfiguration(0);
+let logUIConfig;
+let trackingConfig;
+init();
 
 // Initialization after installation
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Thanks for installing the experimental LogUI configuration builder!');
+  console.log('%cThanks for installing the experimental LogUI configuration builder!', 'color: purple;font-weight:bold;');
   init();
   // Add rightclick context menu
   chrome.contextMenus.create({
@@ -54,13 +41,28 @@ function init() {
   chrome.storage.sync.get(['logUIConfig', 'trackingConfig'], (res) => {
     if (res.logUIConfig) {
       console.log('Previous configuration found. Using that one');
-      logUIConfig = buildLogUIConfig(res.logUIConfig);
-      trackingConfig = buildTrackingConfig(res.trackingConfig);
+      logUIConfig = LogUIConfiguration.fromValue(res.logUIConfig);
+      trackingConfig = TrackingConfiguration.fromValue(res.trackingConfig);
       console.log(logUIConfig);
       console.log(trackingConfig);
     }
     else chrome.storage.sync.set({ logUIConfig, trackingConfig }, () => {
       console.log('No previous config found. Using default.');
+      logUIConfig = LogUIConfiguration.fromValue({
+        id: 0, 
+        websocket: '', 
+        authToken: '', 
+        verboseMode: true,
+        browserEvents: {
+          eventsWhileScrolling: true,
+          URLChanges: true,
+          contextMenu: true,
+          pageFocus: true,
+          trackCursor: true,
+          pageResize: true
+        }
+      });
+      trackingConfig = new TrackingConfiguration(0);
     });
   });
 }
@@ -73,18 +75,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     });
 });
 
-// Reconstitute tracking config model from data
-const buildTrackingConfig = (data) => {
-  return TrackingConfiguration.fromValue(data); 
-}
-
-// Reconstitute logui config model from data
-const buildLogUIConfig = (data) => {
-  return LogUIConfiguration.fromValue(data);
-}
-
 // Handles messages from the popup
 const handleLogUIPopupMessage = (message, sender, sendResponse) => {
+  console.log(`Received message:`);
+  console.log(message);
   if (message.command) {
     if (message.command === 'activatePicker') {
       sendResponse('OK');
@@ -98,7 +92,7 @@ const handleLogUIPopupMessage = (message, sender, sendResponse) => {
     if (message.command === 'updateLogUIConfig' && message.logUIConfig) {
       // console.log('Updating logui config');
       // console.log(message.logUIConfig);
-      logUIConfig = buildLogUIConfig(message.logUIConfig);
+      logUIConfig = LogUIConfiguration.fromValue(message.logUIConfig);
       saveModel();
       sendResponse('OK');
     }
@@ -132,6 +126,8 @@ const handleLogUIPopupMessage = (message, sender, sendResponse) => {
 
 // Handles messages from the selector editor
 const handleSelectorEditorMessage = (message, sender, _sendResponse) => {
+  console.log(`Received message:`);
+  console.log(message);
   if (message.command && message.command === 'addTrackingConfigValue') {
     console.log('Adding new tracking configuration value to collection');
     trackingConfig.addTrackingConfigValue(TrackingConfigurationValue.fromValue(message.trackingConfigValue));
@@ -148,7 +144,8 @@ const handleSelectorEditorMessage = (message, sender, _sendResponse) => {
 
 // Prints out the message
 const handleDefaultMessage = (message, sender) => {
-  console.log(`Received message: ${message} from ${sender}`);
+  console.log('Received message:');
+  console.log(message);
 }
 
 // Get the configuration object as required by LogUI
@@ -164,9 +161,11 @@ function getLogUIConfigObject() {
 
 // Save the models
 function saveModel() {
-  console.log('Saving state to Chrome storage');
+  console.log('%cSaving state to Chrome storage', 'color: green;font-weight:bold;');
   chrome.storage.sync.set({
     logUIConfig,
     trackingConfig
-  }, () => {});
+  }, () => {
+    console.log('%cModel saved!', 'color: green;font-weight:bold;');
+  });
 }
