@@ -7,7 +7,7 @@
         <hr>
         <div class="row">
             <form>
-                <h2>LogUI Configuration</h2>
+                <h2>Server Configuration</h2>
                 <div class="form-group">
                     <label for="endpoint">Websocket endpoint:</label><br>
                     <input v-model="logUIConfig.websocket" class="form-control" required type="text" id="endpoint" name="endpoint" placeholder="Websocket endpoint"><br>
@@ -53,10 +53,11 @@
 
                 <h2>Element Tracking Configuration</h2>
                 <div>
-                    <button @click.prevent="activatePicker" class="btn btn-primary">Choose Element Listeners</button>                        
+                    <button @click.prevent="activatePicker" class="btn btn-primary">Choose Element Listeners</button>
+                    <a class="btn btn-primary" :href="jsonDownloadUri" role="button" download="config.json">Download JSON</a>
                 </div>
                 <hr>
-                <h2>Trackers</h2>                
+                <h2>Trackers</h2>
                 <table class="table">
                 <thead>
                     <tr>
@@ -67,15 +68,12 @@
                 </thead>
                 <tbody>
                     <tr v-for="config in trackingConfig.trackingConfigurationValues" :key="config.name">
-                    <td>{{config.name}}</td>
-                    <td>{{config.selector}}</td>
-                    <td>{{config.eventName}}</td>
+                    <td class="small">{{config.name}}</td>
+                    <td class="small">{{config.selector}}</td>
+                    <td class="small">{{config.eventName}}</td>
                     </tr>
                 </tbody>
                 </table>
-                <hr>
-
-                <a class="btn btn-primary" :href="jsonDownloadUri" role="button" download="config.json">Download JSON</a>
                 <!-- <button @click.prevent="getConfig" id="get-config-btn" class="btn btn-primary">Preview (experimental)</button> -->
             </form> 
         </div>
