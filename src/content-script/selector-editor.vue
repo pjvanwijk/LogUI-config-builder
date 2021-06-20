@@ -89,10 +89,7 @@ export default {
             this.dismiss();
         },
         dismiss() {
-            chrome.runtime.sendMessage({
-                component: 'loguiselectoreditor',
-                command: 'dismissPicker',
-            });
+            this.$emit('dismiss', true);
         }
     },
     watch: {

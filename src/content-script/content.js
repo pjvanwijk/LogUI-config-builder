@@ -67,6 +67,7 @@ function editSelector(selectedElement) {
     picker.highlightBySelector(selector);
   });
 
+  selectorEditorVue.$on('dismiss', dismissPicker);
   selectorEditorVue.$mount(`#${selectorEditMountId}`);
 
   // console.log(`Edit mode for ${getSelector(selectedElement)}`);
