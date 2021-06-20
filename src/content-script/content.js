@@ -1,6 +1,7 @@
 import Picker from "./picker";
 import Vue from 'vue';
 import SelectorEditor from './selector-editor.vue';
+import { compare } from 'specificity';
 // This makes it possible to dynamically create selector editor components
 const SelectorEditorVueComponent = Vue.extend(SelectorEditor);
 
@@ -123,7 +124,8 @@ function getAvailableSelectors(context) {
   // Lowest specificity: universal selector, matches all elements
   selectors.push('*');
 
-  return selectors.reverse();
+  // Sort the selectors by specificity
+  return selectors.sort((selectorA, selectorB) => compare(selectorA, selectorB));
 }
 
 // Get the id of an element
