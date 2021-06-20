@@ -18,6 +18,11 @@ export default class TrackingConfiguration {
         this.trackingConfigurationValues.push(trackingConfigValue);
     }
 
+    deleteTrackingConfigValue(trackingConfigValue) {
+        this.trackingConfigurationValues = this.trackingConfigurationValues
+            .filter((tc) => tc.name !== trackingConfigValue.name);
+    }
+
     // Static factory method
     static fromValue(value) {
         const res = new TrackingConfiguration(value.id);

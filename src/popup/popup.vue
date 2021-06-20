@@ -61,6 +61,7 @@
                 <table class="table">
                 <thead>
                     <tr>
+                    <th scope="col"></th>
                     <th scope="col">Name</th>
                     <th scope="col">Selector</th>
                     <th scope="col">Event</th>
@@ -68,6 +69,13 @@
                 </thead>
                 <tbody>
                     <tr v-for="config in trackingConfig.trackingConfigurationValues" :key="config.name">
+                    <td>
+                        <button 
+                            @click.prevent="() => deleteTracker(config)"
+                            class="btn btn-outline-danger">
+                            <img src="../icons/x.svg">
+                        </button>
+                    </td>
                     <td class="small">{{config.name}}</td>
                     <td class="small">{{config.selector}}</td>
                     <td class="small">{{config.eventName}}</td>
@@ -112,6 +120,14 @@ export default {
             chrome.runtime.sendMessage({
                 component: 'loguipopup',
                 command: 'exportLogUIConfigObject',
+            });
+        },
+        deleteTracker(tracker) {
+            this.trackingConfig.deleteTrackingConfigValue(tracker);
+            chrome.runtime.sendMessage({
+                component: 'loguipopup',
+                command: 'deleteTrackingConfigValue',
+                trackingConfigValue: tracker
             });
         }
     },

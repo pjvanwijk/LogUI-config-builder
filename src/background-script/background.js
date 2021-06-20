@@ -96,6 +96,10 @@ const handleLogUIPopupMessage = (message, sender, sendResponse) => {
       saveModel();
       sendResponse('OK');
     }
+    if (message.command === 'deleteTrackingConfigValue' && message.trackingConfigValue) {
+      trackingConfig.deleteTrackingConfigValue(message.trackingConfigValue);
+      saveModel();
+    }
     /* No longer needed because popup can get this directly from storage API*/
     // if (message.command === 'getLogUIConfig') {
     //   console.log('Request message for logui config received');
