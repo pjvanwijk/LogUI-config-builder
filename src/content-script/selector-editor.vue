@@ -1,6 +1,6 @@
 <template>
     <div class="container fixed-top bg-light" id="logui-selector-editor-ui">
-            <h1>LogUI Element Tracking Options</h1>
+            <h3>LogUI Element Tracking Options</h3>
             <hr>
             <h4>Name: <input v-model="name"/></h4>
             <h4>Selector:</h4><textarea id="logui-selector-editor-textarea" v-model="selector"/>
@@ -33,6 +33,7 @@
         padding: 10px;
         margin-top: 10px;
         opacity: 0.95;
+        width: 50%;
     }
 
     #logui-selector-editor-ui * {
